@@ -1,0 +1,30 @@
+# Planul intern al echipei
+PLAN.md
+
+# Date — prea mari pentru Git; vezi README pentru link
+data/
+*.csv
+*.parquet
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Spark
+spark-warehouse/
+metastore_db/
+derby.log
+checkpoints/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Claude Code (setări locale)
+.claude/settings.local.json
