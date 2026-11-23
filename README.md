@@ -27,4 +27,20 @@ docs/        schema datelor, raport, prezentare
 
 ## Rulare
 
-Instrucțiunile se adaugă pe măsură ce pipeline-ul este construit.
+Cerințe: Docker Desktop pornit și cel puțin 16 GB RAM pe calculator.
+
+```
+# 1. Pornește mediul (prima dată construiește imaginea, ~2 minute)
+docker compose up -d --build
+
+# 2. CSV -> bronze (Parquet partiționat pe zi), ~2 minute pentru octombrie
+docker exec bd-spark python -m src.ingest.csv_to_bronze
+
+# 3. Eșantion de o zi pentru dezvoltare rapidă -> data/sample/events
+docker exec bd-spark python -m src.ingest.make_sample
+```
+
+JupyterLab: http://localhost:8888/lab?token=bigdata
+Spark UI (doar cât rulează un job): http://localhost:4040
+
+Memoria pentru Spark se poate schimba cu variabila `SPARK_DRIVER_MEMORY` (implicit `10g`).
