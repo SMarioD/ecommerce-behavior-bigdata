@@ -1,8 +1,10 @@
-"""Eșantion de o zi din bronze, pentru dezvoltare rapidă (dashboard, notebook-uri).
+"""Eșantion de o zi din silver, pentru dezvoltare rapidă (dashboard, notebook-uri).
 
-Scrie aceeași schemă ca bronze, într-un singur folder: data/sample/events.
+Scrie aceleași scheme ca silver, fiecare într-un singur fișier:
+    data/sample/events    <- silver/events,   o zi
+    data/sample/sessions  <- silver/sessions, sesiunile începute în aceeași zi
 
-Rulare (din container, după csv_to_bronze):
+Rulare (din container, după build_sessions):
     python -m src.ingest.make_sample                    # 2019-10-01
     python -m src.ingest.make_sample --date 2019-10-15
 """
@@ -10,7 +12,7 @@ import argparse
 
 from pyspark.sql import functions as F
 
-from src.common.spark import BRONZE, SAMPLE, get_spark
+from src.common.spark import SAMPLE, SILVER, get_spark
 
 
 def main() -> None:
@@ -19,14 +21,18 @@ def main() -> None:
     args = parser.parse_args()
 
     spark = get_spark("make_sample")
-    out = str(SAMPLE / "events")
+    spark.sparkContext.setLogLevel("ERROR")
 
-    df = spark.read.parquet(str(BRONZE / "events")).where(F.col("event_date") == args.date)
-    df.coalesce(1).write.mode("overwrite").parquet(out)
-
-    sample = spark.read.parquet(out)
-    print(f"Eșantion {args.date}: {sample.count():,} rânduri în {out}")
-    sample.groupBy("event_type").count().orderBy(F.desc("count")).show()
+    for table, date_col in (("events", "event_date"), ("sessions", "session_date")):
+        out = str(SAMPLE / table)
+        (
+            spark.read.parquet(str(SILVER / table))
+            .where(F.col(date_col) == args.date)
+            .coalesce(1)
+            .write.mode("overwrite")
+            .parquet(out)
+        )
+        print(f"sample/{table} ({args.date}): {spark.read.parquet(out).count():,} rânduri")
     spark.stop()
 
 

@@ -12,7 +12,8 @@ services:
       - "127.0.0.1:8888:8888"   # JupyterLab, doar local
       - "127.0.0.1:4040:4040"   # Spark UI, doar local (cât timp rulează un job)
     environment:
-      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY:-10g}
+      SPARK_DRIVER_MEMORY: ${SPARK_DRIVER_MEMORY:-6g}
+      TMPDIR: /workspace/data/tmp   # fișiere temporare pe D:, nu în discul Docker
       JUPYTER_TOKEN: ${JUPYTER_TOKEN:-bigdata}
     command: >
       jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root

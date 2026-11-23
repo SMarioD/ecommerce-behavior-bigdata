@@ -22,7 +22,6 @@ data/        date locale (ignorate de Git)
 src/         ingestie, curățare, analiză, streaming
 dashboard/   aplicația Streamlit
 notebooks/   explorare
-docs/        schema datelor, raport, prezentare
 ```
 
 ## Rulare
@@ -36,11 +35,17 @@ docker compose up -d --build
 # 2. CSV -> bronze (Parquet partiționat pe zi), ~2 minute pentru octombrie
 docker exec bd-spark python -m src.ingest.csv_to_bronze
 
-# 3. Eșantion de o zi pentru dezvoltare rapidă -> data/sample/events
+# 3. bronze -> silver/events (curățare), ~8 minute
+docker exec bd-spark python -m src.clean.bronze_to_silver
+
+# 4. silver/events -> silver/sessions, ~4 minute
+docker exec bd-spark python -m src.clean.build_sessions
+
+# 5. Eșantion de o zi pentru dezvoltare rapidă -> data/sample/events, data/sample/sessions
 docker exec bd-spark python -m src.ingest.make_sample
 ```
 
 JupyterLab: http://localhost:8888/lab?token=bigdata
 Spark UI (doar cât rulează un job): http://localhost:4040
 
-Memoria pentru Spark se poate schimba cu variabila `SPARK_DRIVER_MEMORY` (implicit `10g`).
+Memoria pentru Spark se poate schimba cu variabila `SPARK_DRIVER_MEMORY` (implicit `6g`). Fișierele temporare Spark se scriu în `data/tmp`, lângă date, nu în discul Docker.
